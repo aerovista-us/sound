@@ -11,24 +11,31 @@
   header,footer{padding:14px 20px;background:#06101d;border-bottom:1px solid #0b2238}
   footer{border-top:1px solid #0b2238;border-bottom:none;text-align:center;font-size:12px;color:var(--muted)}
   .wrap{display:grid;grid-template-columns:380px 1fr;gap:18px;padding:18px}
-  .panel{background:var(--card);border:1px solid #162235;border-radius:14px;box-shadow:0 0 24px rgba(0,191,255,.08)}
+  @media (max-width:768px){.wrap{grid-template-columns:1fr;gap:12px;padding:12px}}
+  .panel{background:var(--card);border:1px solid #162235;border-radius:14px;box-shadow:0 0 24px rgba(0,191,255,.08);transition:box-shadow .3s}
   .playlist{padding:10px;overflow:auto;max-height:calc(100vh - 160px)}
-  .track{display:grid;grid-template-columns:72px 1fr auto;gap:10px;padding:8px;border-radius:10px;align-items:center;cursor:pointer}
-  .track:hover{background:#0c1a2c}
-  .track.active{outline:2px solid var(--accent);background:#0b1a2a}
-  .track img{width:72px;height:72px;object-fit:cover;border-radius:8px;border:1px solid #193149}
+  .track{display:grid;grid-template-columns:72px 1fr auto;gap:10px;padding:8px;border-radius:10px;align-items:center;cursor:pointer;transition:all .2s}
+  .track:hover{background:#0c1a2c;transform:translateX(2px)}
+  .track.active{outline:2px solid var(--accent);background:#0b1a2a;box-shadow:0 0 12px rgba(0,191,255,.2)}
+  .track img{width:72px;height:72px;object-fit:cover;border-radius:8px;border:1px solid #193149;transition:opacity .3s}
+  .track img[src^="data:"]{opacity:.5}
   .meta b{display:block;font-weight:700}
   .meta small{color:var(--muted)}
   .stage{display:grid;grid-template-columns:420px 1fr;gap:16px;padding:16px;align-items:start}
+  @media (max-width:768px){.stage{grid-template-columns:1fr}}
   .artbox{padding:10px}
-  .artbox img{width:100%;border-radius:12px;border:1px solid #1a3550}
+  .artbox img{width:100%;border-radius:12px;border:1px solid #1a3550;transition:opacity .3s;min-height:200px;background:var(--card)}
+  .artbox img[src^="data:"]{opacity:.5}
   .player{padding:10px 16px 18px}
-  .controls{display:flex;gap:8px;align-items:center;margin-top:10px}
-  button{background:#0d2339;color:var(--fg);border:1px solid #1f3854;border-radius:10px;padding:10px 14px;cursor:pointer}
-  button:hover{background:#10314e}
-  .linkrow a{color:var(--accent);text-decoration:none;margin-right:12px}
+  .controls{display:flex;gap:8px;align-items:center;margin-top:10px;flex-wrap:wrap}
+  button{background:#0d2339;color:var(--fg);border:1px solid #1f3854;border-radius:10px;padding:10px 14px;cursor:pointer;transition:all .2s;font-size:14px}
+  button:hover{background:#10314e;border-color:var(--accent);transform:translateY(-1px);box-shadow:0 2px 8px rgba(0,191,255,.2)}
+  button:active{transform:translateY(0)}
+  .linkrow a{color:var(--accent);text-decoration:none;margin-right:12px;transition:opacity .2s}
+  .linkrow a:hover{opacity:.8}
   .empty{color:var(--muted);font-size:14px}
-  audio{width:100%}
+  audio{width:100%;outline:none}
+  #title{transition:opacity .3s}
 </style>
 </head>
 <body>
@@ -124,6 +131,7 @@ const getPath = (relativePath) => {
 };
 const playlistEl = $("#playlist"), art=$("#art"), title=$("#title"), subtitle=$("#subtitle"), audio=$("#audio"), source=$("#src"), openVis=$("#openVis");
 let idx=0;
+let audioErrorHandler=null,audioCanPlayHandler=null;
 function renderList(){
   playlistEl.innerHTML='';
   tracks.forEach((t,i)=>{
@@ -131,8 +139,7 @@ function renderList(){
     const img=document.createElement('img');
     img.src=getPath(`art/${t.key}_art.png`);
     img.alt=t.title;
-    img.onerror=function(){console.error('Failed to load image:', this.src); this.src='data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="72" height="72"><rect fill="%23162235" width="72" height="72"/><text x="36" y="36" text-anchor="middle" dy=".3em" fill="%2396b4c9" font-size="10">No Art</text></svg>';};
-    img.onload=function(){console.log('Image loaded:', this.src);};
+    img.onerror=function(){this.src='data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="72" height="72"><rect fill="%23162235" width="72" height="72"/><text x="36" y="36" text-anchor="middle" dy=".3em" fill="%2396b4c9" font-size="10">No Art</text></svg>';};
     const meta=document.createElement('div'); meta.className='meta';
     meta.innerHTML=`<b>${t.title}</b><small>${t.subtitle}</small>`;
     const playIcon=document.createElement('div'); playIcon.textContent='▶';
@@ -145,22 +152,40 @@ function load(i){
   [...document.querySelectorAll('.track')].forEach((el,j)=>el.classList.toggle('active', j===idx));
   art.src=getPath(`art/${t.key}_art.png`);
   art.alt=t.title;
-  art.onerror=function(){console.error('Failed to load art:', this.src); this.src='data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="400" height="400"><rect fill="%23162235" width="400" height="400"/><text x="200" y="200" text-anchor="middle" dy=".3em" fill="%2396b4c9" font-size="20">No Art</text></svg>';};
-  art.onload=function(){console.log('Art loaded:', this.src);};
+  art.onerror=function(){this.src='data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="400" height="400"><rect fill="%23162235" width="400" height="400"/><text x="200" y="200" text-anchor="middle" dy=".3em" fill="%2396b4c9" font-size="20">No Art</text></svg>';};
   title.textContent=t.title; subtitle.textContent=t.subtitle;
+  subtitle.classList.remove('empty');
   openVis.href=getPath(`visualizers/${t.key}_visualizer.html`);
   const audioPath=getPath(`audio/${t.key}.mp3`);
+  // Remove old event listeners
+  if(audioErrorHandler) audio.removeEventListener('error',audioErrorHandler);
+  if(audioCanPlayHandler) audio.removeEventListener('canplay',audioCanPlayHandler);
+  // Set up new handlers
+  audioErrorHandler=function(e){
+    subtitle.textContent='Audio file not found. Please check the file exists.';
+    subtitle.classList.add('empty');
+  };
+  audioCanPlayHandler=function(){
+    subtitle.textContent=t.subtitle;
+    subtitle.classList.remove('empty');
+  };
   source.src=audioPath;
-  console.log('Loading audio:', audioPath);
   audio.load();
-  audio.addEventListener('error', function(e){console.error('Audio error:', e, 'Path:', audioPath);});
-  audio.addEventListener('canplay', function(){console.log('Audio can play:', audioPath);});
-  audio.play().catch(err=>{console.error('Play failed:', err, 'Path:', audioPath);});
+  audio.addEventListener('error',audioErrorHandler);
+  audio.addEventListener('canplay',audioCanPlayHandler);
+  audio.play().catch(()=>{});
 }
 $("#prev").onclick=()=>load((idx-1+tracks.length)%tracks.length);
 $("#next").onclick=()=>load((idx+1)%tracks.length);
-$("#playpause").onclick=()=>audio.paused?audio.play():audio.pause();
+$("#playpause").onclick=()=>audio.paused?audio.play().catch(()=>{}):audio.pause();
 audio.addEventListener('ended',()=>{ if($("#autonext").checked) load((idx+1)%tracks.length); });
+// Keyboard shortcuts
+document.addEventListener('keydown',(e)=>{
+  if(e.target.tagName==='INPUT') return;
+  if(e.key==='ArrowLeft') $("#prev").click();
+  if(e.key==='ArrowRight') $("#next").click();
+  if(e.key===' ') {e.preventDefault(); $("#playpause").click();}
+});
 renderList(); load(0);
 </script>
 </body></html>
