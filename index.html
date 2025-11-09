@@ -104,10 +104,21 @@ const getPath = (relativePath) => {
   let cleanPath = relativePath.replace(/^(\/|\.\/)/, '');
   // For GitHub Pages, if we're in a subdirectory, we need to detect it
   const pathname = window.location.pathname;
-  // If pathname is like /sound/ or /sound/index.html, we need to prepend /sound/
-  if (pathname.includes('/sound/') || pathname === '/sound') {
-    cleanPath = '/sound/' + cleanPath;
+  const hostname = window.location.hostname;
+  // Only add base path if we're on GitHub Pages (not localhost or file://)
+  if (hostname.includes('github.io') || hostname.includes('github.com')) {
+    // Extract repository name from pathname (e.g., /repo-name/ or /repo-name/index.html)
+    // For user sites (username.github.io), pathname is usually / or /index.html
+    // For project sites (username.github.io/repo-name), extract repo name
+    if (pathname !== '/' && pathname !== '/index.html') {
+      const pathParts = pathname.split('/').filter(p => p && p !== 'index.html');
+      if (pathParts.length > 0) {
+        const repoName = pathParts[0];
+        cleanPath = '/' + repoName + '/' + cleanPath;
+      }
+    }
   }
+  // For local files, return relative path (works with file:// and localhost)
   // Return path (works for both local and GitHub Pages)
   return cleanPath;
 };
