@@ -101,8 +101,14 @@ const $ = s => document.querySelector(s);
 // Path utility - ensures paths work on both local and GitHub Pages
 const getPath = (relativePath) => {
   // Remove leading slash or ./ if present
-  const cleanPath = relativePath.replace(/^(\/|\.\/)/, '');
-  // Return clean relative path (works for both local and GitHub Pages)
+  let cleanPath = relativePath.replace(/^(\/|\.\/)/, '');
+  // For GitHub Pages, if we're in a subdirectory, we need to detect it
+  const pathname = window.location.pathname;
+  // If pathname is like /sound/ or /sound/index.html, we need to prepend /sound/
+  if (pathname.includes('/sound/') || pathname === '/sound') {
+    cleanPath = '/sound/' + cleanPath;
+  }
+  // Return path (works for both local and GitHub Pages)
   return cleanPath;
 };
 const playlistEl = $("#playlist"), art=$("#art"), title=$("#title"), subtitle=$("#subtitle"), audio=$("#audio"), source=$("#src"), openVis=$("#openVis");
