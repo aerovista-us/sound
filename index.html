@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang='en'>
+<head>
+<meta charset='UTF-8'/>
+<meta name='viewport' content='width=device-width, initial-scale=1.0'/>
+<title>AeroVista – Album Player</title>
+<style>
+  :root{--bg:#070b12;--fg:#d9eeff;--muted:#96b4c9;--accent:#00bfff;--card:#0f1724;}
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--fg);font-family:Inter,system-ui,Segoe UI,Roboto,Arial,sans-serif;min-height:100vh;display:grid;grid-template-rows:auto 1fr auto;}
+  header,footer{padding:14px 20px;background:#06101d;border-bottom:1px solid #0b2238}
+  footer{border-top:1px solid #0b2238;border-bottom:none;text-align:center;font-size:12px;color:var(--muted)}
+  .wrap{display:grid;grid-template-columns:380px 1fr;gap:18px;padding:18px}
+  .panel{background:var(--card);border:1px solid #162235;border-radius:14px;box-shadow:0 0 24px rgba(0,191,255,.08)}
+  .playlist{padding:10px;overflow:auto;max-height:calc(100vh - 160px)}
+  .track{display:grid;grid-template-columns:72px 1fr auto;gap:10px;padding:8px;border-radius:10px;align-items:center;cursor:pointer}
+  .track:hover{background:#0c1a2c}
+  .track.active{outline:2px solid var(--accent);background:#0b1a2a}
+  .track img{width:72px;height:72px;object-fit:cover;border-radius:8px;border:1px solid #193149}
+  .meta b{display:block;font-weight:700}
+  .meta small{color:var(--muted)}
+  .stage{display:grid;grid-template-columns:420px 1fr;gap:16px;padding:16px;align-items:start}
+  .artbox{padding:10px}
+  .artbox img{width:100%;border-radius:12px;border:1px solid #1a3550}
+  .player{padding:10px 16px 18px}
+  .controls{display:flex;gap:8px;align-items:center;margin-top:10px}
+  button{background:#0d2339;color:var(--fg);border:1px solid #1f3854;border-radius:10px;padding:10px 14px;cursor:pointer}
+  button:hover{background:#10314e}
+  .linkrow a{color:var(--accent);text-decoration:none;margin-right:12px}
+  .empty{color:var(--muted);font-size:14px}
+  audio{width:100%}
+</style>
+</head>
+<body>
+<header><h2>AeroVista – Division Album Player</h2></header>
+<div class='wrap'>
+  <aside class='panel playlist' id='playlist'></aside>
+  <main class='panel'>
+    <div class='stage'>
+      <div class='artbox'><img id='art' src='' alt='Track Art'></div>
+      <div class='player'>
+        <h2 id='title'>—</h2>
+        <div id='subtitle' class='empty'>Select a track to play.</div>
+        <div class='linkrow'><a id='openVis' href='#' target='_blank' rel='noopener'>Open Visualizer</a></div>
+        <audio id='audio' controls autoplay loop><source id='src' src='' type='audio/mpeg' /></audio>
+        <div class='controls'>
+          <button id='prev'>⏮ Prev</button>
+          <button id='playpause'>⏯ Play/Pause</button>
+          <button id='next'>⏭ Next</button>
+          <label style='margin-left:auto;'><input id='autonext' type='checkbox' checked> Auto-next</label>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+<footer>Where Vision Takes Flight — AeroVista</footer>
+<script>
+const tracks = [
+  {
+    "key": "aerovista_effect",
+    "title": "AeroVista Effect",
+    "subtitle": "AeroVista \u2013 Main Anthem"
+  },
+  {
+    "key": "lines_of_power",
+    "title": "Lines of Power",
+    "subtitle": "Nexus TechWorks \u2013 AeroVista"
+  },
+  {
+    "key": "worlds_awake",
+    "title": "Worlds Awake",
+    "subtitle": "SkyForge Creative Studios \u2013 AeroVista"
+  },
+  {
+    "key": "high_mind_rises",
+    "title": "High Mind Rises",
+    "subtitle": "Summit Learning \u2013 AeroVista"
+  },
+  {
+    "key": "sub_below_sea_level",
+    "title": "Sub Below Sea Level",
+    "subtitle": "EchoVerse Audio \u2013 AeroVista"
+  },
+  {
+    "key": "glow_hustle",
+    "title": "Glow Hustle",
+    "subtitle": "Lumina Creative \u2013 AeroVista"
+  },
+  {
+    "key": "midnight_signals",
+    "title": "Midnight Signals",
+    "subtitle": "Vespera Publishing \u2013 AeroVista"
+  },
+  {
+    "key": "eye_in_the_sky",
+    "title": "Eye in the Sky",
+    "subtitle": "Horizon Aerial & Visual \u2013 AeroVista"
+  }
+];
+const $ = s => document.querySelector(s);
+// Path utility - ensures paths work on both local and GitHub Pages
+const getPath = (relativePath) => {
+  // Remove leading slash or ./ if present
+  const cleanPath = relativePath.replace(/^(\/|\.\/)/, '');
+  // Return clean relative path (works for both local and GitHub Pages)
+  return cleanPath;
+};
+const playlistEl = $("#playlist"), art=$("#art"), title=$("#title"), subtitle=$("#subtitle"), audio=$("#audio"), source=$("#src"), openVis=$("#openVis");
+let idx=0;
+function renderList(){
+  playlistEl.innerHTML='';
+  tracks.forEach((t,i)=>{
+    const row=document.createElement('div'); row.className='track'+(i===idx?' active':''); row.onclick=()=>load(i);
+    const img=document.createElement('img');
+    img.src=getPath(`art/${t.key}_art.png`);
+    img.alt=t.title;
+    img.onerror=function(){console.error('Failed to load image:', this.src); this.src='data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="72" height="72"><rect fill="%23162235" width="72" height="72"/><text x="36" y="36" text-anchor="middle" dy=".3em" fill="%2396b4c9" font-size="10">No Art</text></svg>';};
+    img.onload=function(){console.log('Image loaded:', this.src);};
+    const meta=document.createElement('div'); meta.className='meta';
+    meta.innerHTML=`<b>${t.title}</b><small>${t.subtitle}</small>`;
+    const playIcon=document.createElement('div'); playIcon.textContent='▶';
+    row.appendChild(img); row.appendChild(meta); row.appendChild(playIcon);
+    playlistEl.appendChild(row);
+  });
+}
+function load(i){
+  idx=i; const t=tracks[idx];
+  [...document.querySelectorAll('.track')].forEach((el,j)=>el.classList.toggle('active', j===idx));
+  art.src=getPath(`art/${t.key}_art.png`);
+  art.alt=t.title;
+  art.onerror=function(){console.error('Failed to load art:', this.src); this.src='data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="400" height="400"><rect fill="%23162235" width="400" height="400"/><text x="200" y="200" text-anchor="middle" dy=".3em" fill="%2396b4c9" font-size="20">No Art</text></svg>';};
+  art.onload=function(){console.log('Art loaded:', this.src);};
+  title.textContent=t.title; subtitle.textContent=t.subtitle;
+  openVis.href=getPath(`visualizers/${t.key}_visualizer.html`);
+  const audioPath=getPath(`audio/${t.key}.mp3`);
+  source.src=audioPath;
+  console.log('Loading audio:', audioPath);
+  audio.load();
+  audio.addEventListener('error', function(e){console.error('Audio error:', e, 'Path:', audioPath);});
+  audio.addEventListener('canplay', function(){console.log('Audio can play:', audioPath);});
+  audio.play().catch(err=>{console.error('Play failed:', err, 'Path:', audioPath);});
+}
+$("#prev").onclick=()=>load((idx-1+tracks.length)%tracks.length);
+$("#next").onclick=()=>load((idx+1)%tracks.length);
+$("#playpause").onclick=()=>audio.paused?audio.play():audio.pause();
+audio.addEventListener('ended',()=>{ if($("#autonext").checked) load((idx+1)%tracks.length); });
+renderList(); load(0);
+</script>
+</body></html>
