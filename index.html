@@ -191,6 +191,10 @@ function load(i){
     });
   }
   const audioPath=getPath(`audio/${t.key}.mp3`);
+  // Add cache-busting query parameter to ensure new audio files are loaded
+  // Use timestamp to force reload on GitHub Pages
+  const cacheBuster=Date.now();
+  const audioPathWithCache=`${audioPath}?v=${cacheBuster}`;
   // Remove old event listeners
   if(audioErrorHandler) audio.removeEventListener('error',audioErrorHandler);
   if(audioCanPlayHandler) audio.removeEventListener('canplay',audioCanPlayHandler);
@@ -203,7 +207,7 @@ function load(i){
     subtitle.textContent=t.subtitle;
     subtitle.classList.remove('empty');
   };
-  source.src=audioPath;
+  source.src=audioPathWithCache;
   audio.load();
   audio.addEventListener('error',audioErrorHandler);
   audio.addEventListener('canplay',audioCanPlayHandler);
