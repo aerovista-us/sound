@@ -1562,45 +1562,60 @@ function formatTime(seconds) {
   return `${mins}:${secs.toString().padStart(2, '0')}`;
 }
 
-// Progress bar click to seek
+// Progress bar click/touch to seek
+function getProgressFromEvent(e, element) {
+  const rect = element.getBoundingClientRect();
+  const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+  const clickX = clientX - rect.left;
+  const width = rect.width;
+  return Math.max(0, Math.min(1, clickX / width));
+}
+
 $('#custom-progress-bar').addEventListener('click', (e) => {
   if (!audio.duration) return;
-  const rect = e.currentTarget.getBoundingClientRect();
-  const clickX = e.clientX - rect.left;
-  const width = rect.width;
-  const clickPercent = clickX / width;
+  const clickPercent = getProgressFromEvent(e, e.currentTarget);
   audio.currentTime = clickPercent * audio.duration;
   updateProgressBar();
 });
 
-// Progress bar drag
+// Progress bar drag (mouse and touch)
 let isDragging = false;
-$('#custom-progress-bar').addEventListener('mousedown', (e) => {
+const progressBar = $('#custom-progress-bar');
+
+function startDrag(e) {
   isDragging = true;
   if (!audio.duration) return;
-  const rect = e.currentTarget.getBoundingClientRect();
-  const clickX = e.clientX - rect.left;
-  const width = rect.width;
-  const clickPercent = Math.max(0, Math.min(1, clickX / width));
+  progressBar.classList.add('dragging');
+  const clickPercent = getProgressFromEvent(e, progressBar);
   audio.currentTime = clickPercent * audio.duration;
   updateProgressBar();
-});
+  e.preventDefault();
+}
 
-document.addEventListener('mousemove', (e) => {
+function updateDrag(e) {
   if (!isDragging) return;
-  const progressBar = $('#custom-progress-bar');
-  if (!progressBar || !audio.duration) return;
-  const rect = progressBar.getBoundingClientRect();
-  const clickX = e.clientX - rect.left;
-  const width = rect.width;
-  const clickPercent = Math.max(0, Math.min(1, clickX / width));
+  if (!audio.duration) return;
+  const clickPercent = getProgressFromEvent(e, progressBar);
   audio.currentTime = clickPercent * audio.duration;
   updateProgressBar();
-});
+  e.preventDefault();
+}
 
-document.addEventListener('mouseup', () => {
+function endDrag() {
   isDragging = false;
-});
+  progressBar.classList.remove('dragging');
+}
+
+// Mouse events
+progressBar.addEventListener('mousedown', startDrag);
+document.addEventListener('mousemove', updateDrag);
+document.addEventListener('mouseup', endDrag);
+
+// Touch events for mobile
+progressBar.addEventListener('touchstart', startDrag, {passive:false});
+document.addEventListener('touchmove', updateDrag, {passive:false});
+document.addEventListener('touchend', endDrag);
+document.addEventListener('touchcancel', endDrag);
 
 audio.addEventListener('ended',()=>{ 
   if($("#autonext").checked) {
