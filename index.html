@@ -2,7 +2,10 @@
 <html lang='en'>
 <head>
 <meta charset='UTF-8'/>
-<meta name='viewport' content='width=device-width, initial-scale=1.0'/>
+<meta name='viewport' content='width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes'/>
+<meta name='mobile-web-app-capable' content='yes'/>
+<meta name='apple-mobile-web-app-capable' content='yes'/>
+<meta name='apple-mobile-web-app-status-bar-style' content='black-translucent'/>
 <title>AeroVista – Album Player with Store</title>
 <!-- Updated: Enhanced visualizer and progress bar -->
 <!-- Square Web Payments SDK -->
@@ -10,8 +13,8 @@
 <style>
   :root{--bg:#070b12;--fg:#d9eeff;--muted:#96b4c9;--accent:#00bfff;--card:#0f1724;}
   *{box-sizing:border-box}
-  html,body{overflow-x:hidden;width:100%}
-  body{margin:0;background:linear-gradient(135deg, #070b12 0%, #0f1724 50%, #16213e 100%);color:var(--fg);font-family:Inter,system-ui,Segoe UI,Roboto,Arial,sans-serif;min-height:100vh;display:grid;grid-template-rows:auto 1fr auto;position:relative}
+  html,body{overflow-x:hidden;width:100%;-webkit-tap-highlight-color:transparent;-webkit-touch-callout:none;-webkit-user-select:none;user-select:none}
+  body{margin:0;background:linear-gradient(135deg, #070b12 0%, #0f1724 50%, #16213e 100%);color:var(--fg);font-family:Inter,system-ui,Segoe UI,Roboto,Arial,sans-serif;min-height:100vh;display:grid;grid-template-rows:auto 1fr auto;position:relative;touch-action:pan-y}
   body::before{content:'';position:fixed;top:0;left:0;right:0;bottom:0;background:radial-gradient(circle at 20% 50%,rgba(0,191,255,0.1) 0%,transparent 50%),radial-gradient(circle at 80% 80%,rgba(102,126,234,0.1) 0%,transparent 50%);pointer-events:none;z-index:0}
   body>*{position:relative;z-index:1}
   header{padding:14px 20px;background:rgba(6,16,29,0.8);backdrop-filter:blur(20px);border-bottom:1px solid rgba(11,34,56,0.5);display:flex;justify-content:space-between;align-items:center;position:sticky;top:0;z-index:100;overflow-x:hidden;max-width:100%}
@@ -22,12 +25,30 @@
   .cart-badge.active{opacity:1;transform:scale(1);animation:pulse-badge 2s ease-in-out infinite}
   footer{border-top:1px solid #0b2238;border-bottom:none;text-align:center;font-size:12px;color:var(--muted);padding:14px 20px}
   .wrap{display:grid;grid-template-columns:380px 1fr;gap:18px;padding:18px;overflow-x:hidden;max-width:100%}
-  @media (max-width:768px){.wrap{grid-template-columns:1fr;gap:12px;padding:12px}}
+  @media (max-width:768px){
+    .wrap{grid-template-columns:1fr;gap:12px;padding:12px}
+    .panel{padding:12px}
+    .playlist{padding:8px;max-height:calc(100vh - 200px)}
+    .track{padding:12px;min-height:64px;gap:12px}
+    .track img{width:64px;height:64px}
+    .controls{gap:6px}
+    button{padding:12px 16px;font-size:15px;min-height:48px;min-width:48px}
+    .custom-progress-bar{height:8px;min-height:44px;padding:18px 0}
+    .custom-progress-bar.dragging{height:10px}
+    .custom-progress::after{width:20px;height:20px}
+    .time-display{font-size:13px;margin-top:8px}
+    .player{padding:12px 16px 20px}
+    .artbox{padding:8px}
+    .stage{padding:12px;gap:12px}
+    header{padding:12px 16px}
+    .cart-icon{padding:10px 14px;min-height:44px}
+  }
   .panel{background:rgba(15,23,36,0.6);backdrop-filter:blur(20px);border:1px solid rgba(22,35,53,0.5);border-radius:14px;box-shadow:0 0 24px rgba(0,191,255,.08),inset 0 1px 0 rgba(255,255,255,0.05);transition:all .3s;overflow-x:hidden;max-width:100%}
   .panel:hover{box-shadow:0 0 32px rgba(0,191,255,.12),inset 0 1px 0 rgba(255,255,255,0.08)}
-  .playlist{padding:10px;overflow:auto;max-height:calc(100vh - 160px);overflow-x:hidden}
-  .track{display:grid;grid-template-columns:72px 1fr auto;gap:10px;padding:8px;border-radius:10px;align-items:center;cursor:pointer;transition:all .2s;max-width:100%}
+  .playlist{padding:10px;overflow:auto;max-height:calc(100vh - 160px);overflow-x:hidden;-webkit-overflow-scrolling:touch}
+  .track{display:grid;grid-template-columns:72px 1fr auto;gap:10px;padding:8px;border-radius:10px;align-items:center;cursor:pointer;transition:all .2s;max-width:100%;touch-action:manipulation;-webkit-tap-highlight-color:transparent}
   .track:hover{background:#0c1a2c;transform:translateX(2px)}
+  .track:active{background:#0a1828;transform:translateX(0)}
   .track.active{outline:2px solid var(--track-color,var(--accent));background:#0b1a2a;box-shadow:0 0 12px var(--track-glow,rgba(0,191,255,.2))}
   .track img{width:72px;height:72px;object-fit:cover;border-radius:8px;border:1px solid #193149;transition:opacity .3s}
   .track img[src^="data:"]{opacity:.5}
@@ -45,9 +66,9 @@
   @keyframes pulse{0%,100%{opacity:.2;transform:translate(-50%,-50%) scale(1)}50%{opacity:.5;transform:translate(-50%,-50%) scale(1.1)}}
   .player{padding:10px 16px 18px;overflow:hidden}
   .controls{display:flex;gap:8px;align-items:center;margin-top:10px;flex-wrap:wrap}
-  button{background:#0d2339;color:var(--fg);border:1px solid #1f3854;border-radius:10px;padding:10px 14px;cursor:pointer;transition:all .2s;font-size:14px}
+  button{background:#0d2339;color:var(--fg);border:1px solid #1f3854;border-radius:10px;padding:10px 14px;cursor:pointer;transition:all .2s;font-size:14px;touch-action:manipulation;-webkit-tap-highlight-color:transparent;min-height:44px;min-width:44px}
   button:hover{background:#10314e;border-color:var(--accent);transform:translateY(-1px);box-shadow:0 2px 8px rgba(0,191,255,.2)}
-  button:active{transform:translateY(0)}
+  button:active{transform:translateY(0);background:#0a1d2f}
   button:disabled{opacity:0.5;cursor:not-allowed}
   .linkrow{display:none}
   .empty{color:var(--muted);font-size:14px}
@@ -58,7 +79,7 @@
   .custom-audio-player{width:100%;margin-top:16px;padding:0 4px;overflow:hidden}
   .progress-section{display:flex;flex-direction:column;gap:10px;overflow:hidden}
   .progress-container{position:relative;width:100%;padding:8px 0;overflow:hidden}
-  .custom-progress-bar{width:100%;height:6px;background:linear-gradient(90deg,rgba(22,35,53,0.8) 0%,rgba(15,23,36,0.6) 100%);backdrop-filter:blur(20px);border-radius:12px;cursor:pointer;position:relative;overflow:hidden;border:1px solid rgba(22,35,53,0.6);box-shadow:inset 0 2px 8px rgba(0,0,0,0.3),0 1px 2px rgba(0,0,0,0.1);transition:all 0.3s cubic-bezier(0.4,0,0.2,1)}
+  .custom-progress-bar{width:100%;height:6px;background:linear-gradient(90deg,rgba(22,35,53,0.8) 0%,rgba(15,23,36,0.6) 100%);backdrop-filter:blur(20px);border-radius:12px;cursor:pointer;position:relative;overflow:hidden;border:1px solid rgba(22,35,53,0.6);box-shadow:inset 0 2px 8px rgba(0,0,0,0.3),0 1px 2px rgba(0,0,0,0.1);transition:all 0.3s cubic-bezier(0.4,0,0.2,1);touch-action:none;-webkit-tap-highlight-color:transparent}
   .custom-progress-bar::before{content:'';position:absolute;top:0;left:0;right:0;bottom:0;background:linear-gradient(90deg,transparent 0%,rgba(255,255,255,0.05) 50%,transparent 100%);border-radius:12px;pointer-events:none;opacity:0;transition:opacity 0.3s}
   .custom-progress-bar:hover{height:8px;box-shadow:inset 0 2px 8px rgba(0,0,0,0.4),0 0 16px rgba(0,191,255,0.3),0 2px 4px rgba(0,0,0,0.2);border-color:rgba(0,191,255,0.4)}
   .custom-progress-bar:hover::before{opacity:1}
