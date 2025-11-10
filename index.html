@@ -13,8 +13,8 @@
 <style>
   :root{--bg:#070b12;--fg:#d9eeff;--muted:#96b4c9;--accent:#00bfff;--card:#0f1724;}
   *{box-sizing:border-box}
-  html,body{overflow-x:hidden;width:100%;-webkit-tap-highlight-color:transparent;-webkit-touch-callout:none;-webkit-user-select:none;user-select:none}
-  body{margin:0;background:linear-gradient(135deg, #070b12 0%, #0f1724 50%, #16213e 100%);color:var(--fg);font-family:Inter,system-ui,Segoe UI,Roboto,Arial,sans-serif;min-height:100vh;display:grid;grid-template-rows:auto 1fr auto;position:relative;touch-action:pan-y}
+  html,body{overflow-x:hidden;width:100%;-webkit-tap-highlight-color:transparent;-webkit-touch-callout:none;-webkit-user-select:none;user-select:none;scroll-behavior:smooth}
+  body{margin:0;background:linear-gradient(135deg, #070b12 0%, #0f1724 50%, #16213e 100%);color:var(--fg);font-family:Inter,system-ui,Segoe UI,Roboto,Arial,sans-serif;min-height:100vh;display:flex;flex-direction:column;position:relative}
   body::before{content:'';position:fixed;top:0;left:0;right:0;bottom:0;background:radial-gradient(circle at 20% 50%,rgba(0,191,255,0.1) 0%,transparent 50%),radial-gradient(circle at 80% 80%,rgba(102,126,234,0.1) 0%,transparent 50%);pointer-events:none;z-index:0}
   body>*{position:relative;z-index:1}
   header{padding:14px 20px;background:rgba(6,16,29,0.8);backdrop-filter:blur(20px);border-bottom:1px solid rgba(11,34,56,0.5);display:flex;justify-content:space-between;align-items:center;position:sticky;top:0;z-index:100;overflow-x:hidden;max-width:100%}
@@ -45,7 +45,7 @@
   }
   .panel{background:rgba(15,23,36,0.6);backdrop-filter:blur(20px);border:1px solid rgba(22,35,53,0.5);border-radius:14px;box-shadow:0 0 24px rgba(0,191,255,.08),inset 0 1px 0 rgba(255,255,255,0.05);transition:all .3s;overflow-x:hidden;max-width:100%}
   .panel:hover{box-shadow:0 0 32px rgba(0,191,255,.12),inset 0 1px 0 rgba(255,255,255,0.08)}
-  .playlist{padding:10px;overflow:auto;max-height:calc(100vh - 160px);overflow-x:hidden;-webkit-overflow-scrolling:touch}
+  .playlist{padding:10px;overflow-y:auto;overflow-x:hidden;-webkit-overflow-scrolling:touch;scroll-behavior:smooth;overscroll-behavior:contain;flex:1}
   .track{display:grid;grid-template-columns:72px 1fr auto;gap:10px;padding:8px;border-radius:10px;align-items:center;cursor:pointer;transition:all .2s;max-width:100%;touch-action:manipulation;-webkit-tap-highlight-color:transparent}
   .track:hover{background:#0c1a2c;transform:translateX(2px)}
   .track:active{background:#0a1828;transform:translateX(0)}
@@ -54,7 +54,7 @@
   .track img[src^="data:"]{opacity:.5}
   .meta b{display:block;font-weight:700}
   .meta small{color:var(--muted)}
-  .stage{display:grid;grid-template-columns:420px 1fr;gap:16px;padding:16px;align-items:start;overflow-x:hidden;max-width:100%}
+  .stage{display:grid;grid-template-columns:420px 1fr;gap:16px;padding:16px;align-items:start;overflow-x:hidden;max-width:100%;flex:1;min-height:0;overflow-y:auto;-webkit-overflow-scrolling:touch;scroll-behavior:smooth}
   @media (max-width:768px){.stage{grid-template-columns:1fr}}
   .artbox{padding:10px;position:relative;overflow:hidden;border-radius:12px}
   .artbox img{width:100%;border-radius:12px;border:1px solid #1a3550;transition:opacity .3s;min-height:200px;background:var(--card);position:relative;z-index:2}
@@ -64,7 +64,7 @@
   .artbox::before{content:'';position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:120%;height:120%;background:radial-gradient(circle,var(--track-color,var(--accent)) 0%,transparent 70%);opacity:0;transition:opacity .3s,background .3s;z-index:1;pointer-events:none;filter:blur(40px)}
   .artbox.visualizing::before{opacity:.4;animation:pulse 2s ease-in-out infinite}
   @keyframes pulse{0%,100%{opacity:.2;transform:translate(-50%,-50%) scale(1)}50%{opacity:.5;transform:translate(-50%,-50%) scale(1.1)}}
-  .player{padding:10px 16px 18px;overflow:hidden}
+  .player{padding:10px 16px 18px;overflow:hidden;position:sticky;bottom:0;background:rgba(15,23,36,0.95);backdrop-filter:blur(20px);border-top:1px solid rgba(22,35,53,0.5);z-index:50;margin-top:auto}
   .controls{display:flex;gap:8px;align-items:center;margin-top:10px;flex-wrap:wrap}
   button{background:#0d2339;color:var(--fg);border:1px solid #1f3854;border-radius:10px;padding:10px 14px;cursor:pointer;transition:all .2s;font-size:14px;touch-action:manipulation;-webkit-tap-highlight-color:transparent;min-height:44px;min-width:44px}
   button:hover{background:#10314e;border-color:var(--accent);transform:translateY(-1px);box-shadow:0 2px 8px rgba(0,191,255,.2)}
