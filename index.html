@@ -42,7 +42,7 @@
   .artbox::before{content:'';position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:120%;height:120%;background:radial-gradient(circle,var(--track-color,var(--accent)) 0%,transparent 70%);opacity:0;transition:opacity .3s,background .3s;z-index:1;pointer-events:none;filter:blur(40px)}
   .artbox.visualizing::before{opacity:.4;animation:pulse 2s ease-in-out infinite}
   @keyframes pulse{0%,100%{opacity:.2;transform:translate(-50%,-50%) scale(1)}50%{opacity:.5;transform:translate(-50%,-50%) scale(1.1)}}
-  .player{padding:10px 16px 18px}
+  .player{padding:10px 16px 18px;overflow:hidden}
   .controls{display:flex;gap:8px;align-items:center;margin-top:10px;flex-wrap:wrap}
   button{background:#0d2339;color:var(--fg);border:1px solid #1f3854;border-radius:10px;padding:10px 14px;cursor:pointer;transition:all .2s;font-size:14px}
   button:hover{background:#10314e;border-color:var(--accent);transform:translateY(-1px);box-shadow:0 2px 8px rgba(0,191,255,.2)}
@@ -54,19 +54,19 @@
   #title{transition:opacity .3s}
   
   /* Custom Audio Scrub Bar - Enhanced */
-  .custom-audio-player{width:100%;margin-top:16px;padding:0 4px}
-  .progress-section{display:flex;flex-direction:column;gap:10px}
-  .progress-container{position:relative;width:100%;padding:8px 0}
-  .custom-progress-bar{width:100%;height:6px;background:linear-gradient(90deg,rgba(22,35,53,0.8) 0%,rgba(15,23,36,0.6) 100%);backdrop-filter:blur(20px);border-radius:12px;cursor:pointer;position:relative;overflow:visible;border:1px solid rgba(22,35,53,0.6);box-shadow:inset 0 2px 8px rgba(0,0,0,0.3),0 1px 2px rgba(0,0,0,0.1);transition:all 0.3s cubic-bezier(0.4,0,0.2,1)}
+  .custom-audio-player{width:100%;margin-top:16px;padding:0 4px;overflow:hidden}
+  .progress-section{display:flex;flex-direction:column;gap:10px;overflow:hidden}
+  .progress-container{position:relative;width:100%;padding:8px 0;overflow:hidden}
+  .custom-progress-bar{width:100%;height:6px;background:linear-gradient(90deg,rgba(22,35,53,0.8) 0%,rgba(15,23,36,0.6) 100%);backdrop-filter:blur(20px);border-radius:12px;cursor:pointer;position:relative;overflow:hidden;border:1px solid rgba(22,35,53,0.6);box-shadow:inset 0 2px 8px rgba(0,0,0,0.3),0 1px 2px rgba(0,0,0,0.1);transition:all 0.3s cubic-bezier(0.4,0,0.2,1)}
   .custom-progress-bar::before{content:'';position:absolute;top:0;left:0;right:0;bottom:0;background:linear-gradient(90deg,transparent 0%,rgba(255,255,255,0.05) 50%,transparent 100%);border-radius:12px;pointer-events:none;opacity:0;transition:opacity 0.3s}
   .custom-progress-bar:hover{height:8px;box-shadow:inset 0 2px 8px rgba(0,0,0,0.4),0 0 16px rgba(0,191,255,0.3),0 2px 4px rgba(0,0,0,0.2);border-color:rgba(0,191,255,0.4)}
   .custom-progress-bar:hover::before{opacity:1}
   .custom-progress-bar.dragging{height:10px;cursor:grabbing;box-shadow:inset 0 2px 8px rgba(0,0,0,0.4),0 0 24px rgba(0,191,255,0.5),0 4px 8px rgba(0,0,0,0.3)}
-  .custom-progress{height:100%;background:linear-gradient(90deg,var(--track-color,var(--accent)) 0%,var(--track-color-secondary,var(--accent)) 50%,var(--track-color,var(--accent)) 100%);background-size:200% 100%;border-radius:12px;width:0%;transition:width 0.05s linear;position:relative;box-shadow:0 0 20px rgba(0,191,255,0.5),inset 0 1px 0 rgba(255,255,255,0.3),inset 0 -1px 0 rgba(0,0,0,0.2);animation:progressShimmer 3s ease-in-out infinite}
+  .custom-progress{height:100%;background:linear-gradient(90deg,var(--track-color,var(--accent)) 0%,var(--track-color-secondary,var(--accent)) 50%,var(--track-color,var(--accent)) 100%);background-size:200% 100%;border-radius:12px;width:0%;max-width:100%;transition:width 0.05s linear;position:relative;box-shadow:0 0 20px rgba(0,191,255,0.5),inset 0 1px 0 rgba(255,255,255,0.3),inset 0 -1px 0 rgba(0,0,0,0.2);animation:progressShimmer 3s ease-in-out infinite;overflow:hidden}
   .custom-progress::before{content:'';position:absolute;top:0;left:0;right:0;bottom:0;background:linear-gradient(90deg,transparent 0%,rgba(255,255,255,0.2) 50%,transparent 100%);border-radius:12px;pointer-events:none;animation:shimmer 2s ease-in-out infinite}
-  .custom-progress::after{content:'';position:absolute;top:50%;right:-6px;transform:translateY(-50%) scale(0);width:18px;height:18px;background:linear-gradient(135deg,rgba(255,255,255,0.95),rgba(255,255,255,0.85));border-radius:50%;box-shadow:0 0 0 3px var(--track-color,var(--accent)),0 4px 12px rgba(0,191,255,0.6),0 2px 6px rgba(0,0,0,0.3);opacity:0;transition:all 0.3s cubic-bezier(0.4,0,0.2,1);pointer-events:none}
-  .custom-progress-bar:hover .custom-progress::after{opacity:1;transform:translateY(-50%) scale(1)}
-  .custom-progress-bar.dragging .custom-progress::after{opacity:1;transform:translateY(-50%) scale(1.3);box-shadow:0 0 0 4px var(--track-color,var(--accent)),0 6px 20px rgba(0,191,255,0.8),0 4px 12px rgba(0,0,0,0.4)}
+  .custom-progress::after{content:'';position:absolute;top:50%;right:0;transform:translateY(-50%) translateX(50%) scale(0);width:18px;height:18px;background:linear-gradient(135deg,rgba(255,255,255,0.95),rgba(255,255,255,0.85));border-radius:50%;box-shadow:0 0 0 3px var(--track-color,var(--accent)),0 4px 12px rgba(0,191,255,0.6),0 2px 6px rgba(0,0,0,0.3);opacity:0;transition:all 0.3s cubic-bezier(0.4,0,0.2,1);pointer-events:none}
+  .custom-progress-bar:hover .custom-progress::after{opacity:1;transform:translateY(-50%) translateX(50%) scale(1)}
+  .custom-progress-bar.dragging .custom-progress::after{opacity:1;transform:translateY(-50%) translateX(50%) scale(1.3);box-shadow:0 0 0 4px var(--track-color,var(--accent)),0 6px 20px rgba(0,191,255,0.8),0 4px 12px rgba(0,0,0,0.4)}
   .progress-buffer{position:absolute;top:0;left:0;height:100%;background:linear-gradient(90deg,rgba(0,191,255,0.2),rgba(0,191,255,0.1));border-radius:12px;width:0%;transition:width 0.3s ease;pointer-events:none;opacity:0.6}
   .progress-buffer::after{content:'';position:absolute;top:0;right:0;bottom:0;width:2px;background:rgba(0,191,255,0.4);border-radius:0 12px 12px 0;box-shadow:0 0 8px rgba(0,191,255,0.6)}
   .time-display{display:flex;justify-content:space-between;align-items:center;font-size:12px;font-weight:500;margin-top:4px;letter-spacing:0.3px}
@@ -1505,7 +1505,7 @@ $("#playpause").onclick=()=>audio.paused?audio.play().catch(()=>{}):audio.pause(
 // Custom Progress Bar Functions
 function updateProgressBar() {
   if (!audio.duration) return;
-  const progress = (audio.currentTime / audio.duration) * 100;
+  const progress = Math.min(100, Math.max(0, (audio.currentTime / audio.duration) * 100));
   const progressEl = $('#custom-progress');
   if (progressEl) {
     progressEl.style.width = progress + '%';
