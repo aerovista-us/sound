@@ -270,7 +270,7 @@
       <div class='player'>
         <h2 id='title'>—</h2>
         <div id='subtitle' class='empty'>Select a track to play.</div>
-        <audio id='audio' autoplay loop><source id='src' src='' type='audio/mpeg' /></audio>
+        <audio id='audio' autoplay><source id='src' src='' type='audio/mpeg' /></audio>
         <div class='custom-audio-player'>
           <div class='progress-section'>
             <div class='progress-container'>
@@ -1580,7 +1580,13 @@ document.addEventListener('mouseup', () => {
   isDragging = false;
 });
 
-audio.addEventListener('ended',()=>{ if($("#autonext").checked) load((idx+1)%tracks.length); });
+audio.addEventListener('ended',()=>{ 
+  if($("#autonext").checked) {
+    load((idx+1)%tracks.length);
+  } else {
+    audio.pause();
+  }
+});
 audio.addEventListener('play',()=>{
   // Show attention features when playback starts
   const currentTrack = tracks[idx];
