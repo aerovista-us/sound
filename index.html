@@ -1857,6 +1857,66 @@ renderList();
 load(0);
 renderStore();
 resetAttentionFeatures();
-updateCart();
+  updateCart();
+  
+  // PWA Installation
+  let deferredPrompt;
+  const installPrompt = $('#install-prompt');
+  const installBtn = $('#install-btn');
+  const installClose = $('#install-close');
+  
+  // Check if already installed
+  if (window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone) {
+    installPrompt.style.display = 'none';
+  }
+  
+  // Listen for beforeinstallprompt event
+  window.addEventListener('beforeinstallprompt', (e) => {
+    e.preventDefault();
+    deferredPrompt = e;
+    setTimeout(() => {
+      if (!localStorage.getItem('install-prompt-dismissed')) {
+        installPrompt.classList.add('show');
+      }
+    }, 3000);
+  });
+  
+  // Install button click
+  installBtn.addEventListener('click', async () => {
+    if (!deferredPrompt) return;
+    deferredPrompt.prompt();
+    const { outcome } = await deferredPrompt.userChoice;
+    if (outcome === 'accepted') {
+      console.log('User accepted the install prompt');
+    }
+    deferredPrompt = null;
+    installPrompt.classList.remove('show');
+  });
+  
+  // Close install prompt
+  installClose.addEventListener('click', () => {
+    installPrompt.classList.remove('show');
+    localStorage.setItem('install-prompt-dismissed', 'true');
+  });
+  
+  // Service Worker Registration
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+      navigator.serviceWorker.register('/service-worker.js')
+        .then((registration) => {
+          console.log('ServiceWorker registered:', registration);
+        })
+        .catch((error) => {
+          console.log('ServiceWorker registration failed:', error);
+        });
+    });
+  }
+  
+  // Update check for PWA
+  window.addEventListener('appinstalled', () => {
+    console.log('PWA installed');
+    installPrompt.classList.remove('show');
+    localStorage.setItem('pwa-installed', 'true');
+  });
 </script>
 </body></html>
