@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+<html lang='en'>
+<head>
+<meta charset='UTF-8'/>
+<meta name='viewport' content='width=device-width, initial-scale=1.0'/>
+<title>AeroVista – Album Player</title>
+<style>
+  :root{--bg:#070b12;--fg:#d9eeff;--muted:#96b4c9;--accent:#00bfff;--card:#0f1724;}
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--fg);font-family:Inter,system-ui,Segoe UI,Roboto,Arial,sans-serif;min-height:100vh;display:grid;grid-template-rows:auto 1fr auto;}
+  header,footer{padding:14px 20px;background:#06101d;border-bottom:1px solid #0b2238}
+  footer{border-top:1px solid #0b2238;border-bottom:none;text-align:center;font-size:12px;color:var(--muted)}
+  .wrap{display:grid;grid-template-columns:380px 1fr;gap:18px;padding:18px}
+  @media (max-width:768px){.wrap{grid-template-columns:1fr;gap:12px;padding:12px}}
+  .panel{background:var(--card);border:1px solid #162235;border-radius:14px;box-shadow:0 0 24px rgba(0,191,255,.08);transition:box-shadow .3s}
+  .playlist{padding:10px;overflow:auto;max-height:calc(100vh - 160px)}
+  .track{display:grid;grid-template-columns:72px 1fr auto;gap:10px;padding:8px;border-radius:10px;align-items:center;cursor:pointer;transition:all .2s}
+  .track:hover{background:#0c1a2c;transform:translateX(2px)}
+  .track.active{outline:2px solid var(--track-color,var(--accent));background:#0b1a2a;box-shadow:0 0 12px var(--track-glow,rgba(0,191,255,.2))}
+  .track img{width:72px;height:72px;object-fit:cover;border-radius:8px;border:1px solid #193149;transition:opacity .3s}
+  .track img[src^="data:"]{opacity:.5}
+  .meta b{display:block;font-weight:700}
+  .meta small{color:var(--muted)}
+  .stage{display:grid;grid-template-columns:420px 1fr;gap:16px;padding:16px;align-items:start}
+  @media (max-width:768px){.stage{grid-template-columns:1fr}}
+  .artbox{padding:10px;position:relative;overflow:hidden;border-radius:12px}
+  .artbox img{width:100%;border-radius:12px;border:1px solid #1a3550;transition:opacity .3s;min-height:200px;background:var(--card);position:relative;z-index:2}
+  .artbox img[src^="data:"]{opacity:.5}
+  .visualizer-canvas{position:absolute;top:0;left:0;width:100%;height:100%;z-index:1;opacity:.6;border-radius:12px}
+  .artbox::before{content:'';position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:120%;height:120%;background:radial-gradient(circle,var(--track-color,var(--accent)) 0%,transparent 70%);opacity:0;transition:opacity .3s,background .3s;z-index:1;pointer-events:none;filter:blur(40px)}
+  .artbox.visualizing::before{opacity:.4;animation:pulse 2s ease-in-out infinite}
+  @keyframes pulse{0%,100%{opacity:.2;transform:translate(-50%,-50%) scale(1)}50%{opacity:.5;transform:translate(-50%,-50%) scale(1.1)}}
+  .player{padding:10px 16px 18px}
+  .controls{display:flex;gap:8px;align-items:center;margin-top:10px;flex-wrap:wrap}
+  button{background:#0d2339;color:var(--fg);border:1px solid #1f3854;border-radius:10px;padding:10px 14px;cursor:pointer;transition:all .2s;font-size:14px}
+  button:hover{background:#10314e;border-color:var(--accent);transform:translateY(-1px);box-shadow:0 2px 8px rgba(0,191,255,.2)}
+  button:active{transform:translateY(0)}
+  .linkrow{display:none}
+  .empty{color:var(--muted);font-size:14px}
+  audio{width:100%;outline:none}
+  #title{transition:opacity .3s}
+</style>
+</head>
+<body>
+<header><h2>AeroVista – Division Album Player</h2></header>
+<div class='wrap'>
+  <aside class='panel playlist' id='playlist'></aside>
+  <main class='panel'>
+    <div class='stage'>
+      <div class='artbox' id='artbox'><canvas id='visualizer' class='visualizer-canvas'></canvas><img id='art' src='' alt='Track Art'></div>
+      <div class='player'>
+        <h2 id='title'>—</h2>
+        <div id='subtitle' class='empty'>Select a track to play.</div>
+        <audio id='audio' controls autoplay loop><source id='src' src='' type='audio/mpeg' /></audio>
+        <div class='controls'>
+          <button id='prev'>⏮ Prev</button>
+          <button id='playpause'>⏯ Play/Pause</button>
+          <button id='next'>⏭ Next</button>
+          <label style='margin-left:auto;'><input id='autonext' type='checkbox' checked> Auto-next</label>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+<footer>Where Vision Takes Flight — AeroVista</footer>
+<script>
+const tracks = [
+  {
+    "key": "aerovista_effect",
+    "title": "AeroVista Effect",
+    "subtitle": "AeroVista \u2013 Main Anthem",
+    "color": "#00bfff",
+    "bgColor": "#000c1f"
+  },
+  {
+    "key": "lines_of_power",
+    "title": "Lines of Power",
+    "subtitle": "Nexus TechWorks \u2013 AeroVista",
+    "color": "#00ffe0",
+    "bgColor": "#000000"
+  },
+  {
+    "key": "worlds_awake",
+    "title": "Worlds Awake",
+    "subtitle": "SkyForge Creative Studios \u2013 AeroVista",
+    "color": "#8b5cf6",
+    "bgColor": "#0e0e1a"
+  },
+  {
+    "key": "high_mind_rises",
+    "title": "High Mind Rises",
+    "subtitle": "Summit Learning \u2013 AeroVista",
+    "color": "#ffa500",
+    "bgColor": "#0a0a0a"
+  },
+  {
+    "key": "sub_below_sea_level",
+    "title": "Sub Below Sea Level",
+    "subtitle": "EchoVerse Audio \u2013 AeroVista",
+    "color": "#00bfff",
+    "bgColor": "#000c1f"
+  },
+  {
+    "key": "glow_hustle",
+    "title": "Glow Hustle",
+    "subtitle": "Lumina Creative \u2013 AeroVista",
+    "color": "#ff69b4",
+    "bgColor": "#0b0514"
+  },
+  {
+    "key": "midnight_signals",
+    "title": "Midnight Signals",
+    "subtitle": "Vespera Publishing \u2013 AeroVista",
+    "color": "#a78bfa",
+    "bgColor": "#1a161f"
+  },
+  {
+    "key": "eye_in_the_sky",
+    "title": "Eye in the Sky",
+    "subtitle": "Horizon Aerial & Visual \u2013 AeroVista",
+    "color": "#00bfff",
+    "bgColor": "#000c1f"
+  }
+];
+const $ = s => document.querySelector(s);
+// Path utility - ensures paths work on both local and GitHub Pages
+const getPath = (relativePath) => {
+  // Remove leading slash or ./ if present
+  let cleanPath = relativePath.replace(/^(\/|\.\/)/, '');
+  // For GitHub Pages, if we're in a subdirectory, we need to detect it
+  const pathname = window.location.pathname;
+  const hostname = window.location.hostname;
+  // Only add base path if we're on GitHub Pages (not localhost or file://)
+  if (hostname.includes('github.io') || hostname.includes('github.com')) {
+    // Extract repository name from pathname (e.g., /repo-name/ or /repo-name/index.html)
+    // For user sites (username.github.io), pathname is usually / or /index.html
+    // For project sites (username.github.io/repo-name), extract repo name
+    if (pathname !== '/' && pathname !== '/index.html') {
+      const pathParts = pathname.split('/').filter(p => p && p !== 'index.html');
+      if (pathParts.length > 0) {
+        const repoName = pathParts[0];
+        cleanPath = '/' + repoName + '/' + cleanPath;
+      }
+    }
+  }
+  // For local files, return relative path (works with file:// and localhost)
+  // Return path (works for both local and GitHub Pages)
+  return cleanPath;
+};
+const playlistEl = $("#playlist"), art=$("#art"), title=$("#title"), subtitle=$("#subtitle"), audio=$("#audio"), source=$("#src"), artbox=$("#artbox"), visualizer=$("#visualizer");
+let idx=0;
+let audioErrorHandler=null,audioCanPlayHandler=null;
+let audioContext=null,analyser=null,dataArray=null,animationFrame=null,sourceNode=null;
+function hexToRgb(hex){
+  const result=/^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+  return result?{r:parseInt(result[1],16),g:parseInt(result[2],16),b:parseInt(result[3],16)}:{r:0,g:191,b:255};
+}
+function renderList(){
+  playlistEl.innerHTML='';
+  tracks.forEach((t,i)=>{
+    const row=document.createElement('div'); row.className='track'+(i===idx?' active':''); row.onclick=()=>load(i);
+    const img=document.createElement('img');
+    img.src=getPath(`art/${t.key}_art.png`);
+    img.alt=t.title;
+    img.onerror=function(){this.src='data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="72" height="72"><rect fill="%23162235" width="72" height="72"/><text x="36" y="36" text-anchor="middle" dy=".3em" fill="%2396b4c9" font-size="10">No Art</text></svg>';};
+    const meta=document.createElement('div'); meta.className='meta';
+    meta.innerHTML=`<b>${t.title}</b><small>${t.subtitle}</small>`;
+    const playIcon=document.createElement('div'); playIcon.textContent='▶';
+    row.appendChild(img); row.appendChild(meta); row.appendChild(playIcon);
+    playlistEl.appendChild(row);
+  });
+}
+function load(i){
+  stopVisualizer();
+  idx=i; const t=tracks[idx];
+  [...document.querySelectorAll('.track')].forEach((el,j)=>el.classList.toggle('active', j===idx));
+  art.src=getPath(`art/${t.key}_art.png`);
+  art.alt=t.title;
+  art.onerror=function(){this.src='data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="400" height="400"><rect fill="%23162235" width="400" height="400"/><text x="200" y="200" text-anchor="middle" dy=".3em" fill="%2396b4c9" font-size="20">No Art</text></svg>';};
+  title.textContent=t.title; subtitle.textContent=t.subtitle;
+  subtitle.classList.remove('empty');
+  // Apply track-specific colors from visualizer
+  if(t.color){
+    const rgb=hexToRgb(t.color);
+    artbox.style.setProperty('--track-color',t.color);
+    document.documentElement.style.setProperty('--track-glow',`rgba(${rgb.r},${rgb.g},${rgb.b},0.2)`);
+    // Update active track glow
+    document.querySelectorAll('.track.active').forEach(el=>{
+      el.style.setProperty('--track-color',t.color);
+      el.style.setProperty('--track-glow',`rgba(${rgb.r},${rgb.g},${rgb.b},0.2)`);
+    });
+  }
+  const audioPath=getPath(`audio/${t.key}.mp3`);
+  // Add cache-busting query parameter to ensure new audio files are loaded
+  // Use timestamp to force reload on GitHub Pages
+  const cacheBuster=Date.now();
+  const audioPathWithCache=`${audioPath}?v=${cacheBuster}`;
+  // Remove old event listeners
+  if(audioErrorHandler) audio.removeEventListener('error',audioErrorHandler);
+  if(audioCanPlayHandler) audio.removeEventListener('canplay',audioCanPlayHandler);
+  // Set up new handlers
+  audioErrorHandler=function(e){
+    subtitle.textContent='Audio file not found. Please check the file exists.';
+    subtitle.classList.add('empty');
+  };
+  audioCanPlayHandler=function(){
+    subtitle.textContent=t.subtitle;
+    subtitle.classList.remove('empty');
+  };
+  source.src=audioPathWithCache;
+  audio.load();
+  audio.addEventListener('error',audioErrorHandler);
+  audio.addEventListener('canplay',audioCanPlayHandler);
+  audio.addEventListener('play',initVisualizer);
+  audio.addEventListener('pause',stopVisualizer);
+  audio.play().catch(()=>{});
+}
+function initVisualizer(){
+  if(!audioContext){
+    try{
+      audioContext=new (window.AudioContext||window.webkitAudioContext)();
+      analyser=audioContext.createAnalyser();
+      analyser.fftSize=256;
+      analyser.smoothingTimeConstant=0.8;
+      if(!sourceNode){
+        sourceNode=audioContext.createMediaElementSource(audio);
+        const gainNode=audioContext.createGain();
+        sourceNode.connect(gainNode);
+        gainNode.connect(analyser);
+        gainNode.connect(audioContext.destination);
+      }
+      dataArray=new Uint8Array(analyser.frequencyBinCount);
+    }catch(e){
+      if(e.name==='InvalidStateError'||e.message.includes('already been connected')){
+        if(!analyser){
+          analyser=audioContext.createAnalyser();
+          analyser.fftSize=256;
+          analyser.smoothingTimeConstant=0.8;
+        }
+        dataArray=new Uint8Array(analyser.frequencyBinCount);
+      }else{
+        return;
+      }
+    }
+  }
+  if(audioContext.state==='suspended'){
+    audioContext.resume();
+  }
+  artbox.classList.add('visualizing');
+  resizeCanvas();
+  drawVisualizer();
+}
+function stopVisualizer(){
+  if(animationFrame){
+    cancelAnimationFrame(animationFrame);
+    animationFrame=null;
+  }
+  artbox.classList.remove('visualizing');
+  const ctx=visualizer.getContext('2d');
+  ctx.clearRect(0,0,visualizer.width,visualizer.height);
+}
+function resizeCanvas(){
+  const rect=artbox.getBoundingClientRect();
+  visualizer.width=rect.width;
+  visualizer.height=rect.height;
+}
+function drawVisualizer(){
+  if(!analyser||audio.paused) return;
+  analyser.getByteFrequencyData(dataArray);
+  const ctx=visualizer.getContext('2d');
+  const width=visualizer.width;
+  const height=visualizer.height;
+  const t=tracks[idx];
+  const trackColor=t.color||'#00bfff';
+  const rgb=hexToRgb(trackColor);
+  ctx.fillStyle='rgba(7,11,18,0.3)';
+  ctx.fillRect(0,0,width,height);
+  const barCount=64;
+  const barWidth=width/barCount;
+  const maxHeight=height*0.8;
+  let avg=0;
+  for(let i=0;i<barCount;i++){
+    const dataIndex=Math.floor((i/barCount)*dataArray.length);
+    const barHeight=(dataArray[dataIndex]/255)*maxHeight;
+    avg+=barHeight;
+    const x=i*barWidth;
+    const y=height-barHeight;
+    const gradient=ctx.createLinearGradient(x,0,x,height);
+    gradient.addColorStop(0,`rgba(${rgb.r},${rgb.g},${rgb.b},0.8)`);
+    gradient.addColorStop(0.5,`rgba(${rgb.r},${rgb.g},${rgb.b},0.4)`);
+    gradient.addColorStop(1,`rgba(${rgb.r},${rgb.g},${rgb.b},0.1)`);
+    ctx.fillStyle=gradient;
+    ctx.fillRect(x,y,barWidth-2,barHeight);
+    ctx.shadowColor=`rgba(${rgb.r},${rgb.g},${rgb.b},0.6)`;
+    ctx.shadowBlur=10;
+    ctx.fillRect(x,y,barWidth-2,barHeight);
+    ctx.shadowBlur=0;
+  }
+  avg/=barCount;
+  const glowIntensity=Math.min(avg/maxHeight,1);
+  artbox.style.setProperty('--glow-opacity',glowIntensity*0.6);
+  animationFrame=requestAnimationFrame(drawVisualizer);
+}
+window.addEventListener('resize',()=>{if(visualizer) resizeCanvas();});
+$("#prev").onclick=()=>load((idx-1+tracks.length)%tracks.length);
+$("#next").onclick=()=>load((idx+1)%tracks.length);
+$("#playpause").onclick=()=>audio.paused?audio.play().catch(()=>{}):audio.pause();
+audio.addEventListener('ended',()=>{ if($("#autonext").checked) load((idx+1)%tracks.length); });
+// Keyboard shortcuts
+document.addEventListener('keydown',(e)=>{
+  if(e.target.tagName==='INPUT') return;
+  if(e.key==='ArrowLeft') $("#prev").click();
+  if(e.key==='ArrowRight') $("#next").click();
+  if(e.key===' ') {e.preventDefault(); $("#playpause").click();}
+});
+renderList(); load(0);
+</script>
+</body></html>
