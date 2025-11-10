@@ -1,0 +1,44 @@
+{
+  "name": "AeroVista Album Player",
+  "short_name": "AeroVista",
+  "description": "AeroVista Division Album Player with Store",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#070b12",
+  "theme_color": "#00bfff",
+  "orientation": "any",
+  "scope": "/",
+  "icons": [
+    {
+      "src": "art/aerovista_effect_art.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "art/aerovista_effect_art.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "categories": ["music", "entertainment"],
+  "screenshots": [],
+  "shortcuts": [
+    {
+      "name": "Playlist",
+      "short_name": "Playlist",
+      "description": "View playlist",
+      "url": "/?tab=playlist",
+      "icons": [{ "src": "art/aerovista_effect_art.png", "sizes": "96x96" }]
+    },
+    {
+      "name": "Shop",
+      "short_name": "Shop",
+      "description": "View store",
+      "url": "/?tab=shop",
+      "icons": [{ "src": "art/aerovista_effect_art.png", "sizes": "96x96" }]
+    }
+  ]
+}
+
