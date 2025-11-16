@@ -1,0 +1,43 @@
+{
+  "name": "AeroVista Presents — Where Vision Takes Flight",
+  "short_name": "AeroVista",
+  "description": "AeroVista Division Album Player — Volume One · Eight Divisions, One Vision",
+  "start_url": "./",
+  "display": "standalone",
+  "background_color": "#0e131b",
+  "theme_color": "#d1a85a",
+  "orientation": "any",
+  "scope": "./",
+  "icons": [
+    {
+      "src": "assets/img/aerovista_anthem.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "assets/img/aerovista_anthem.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "categories": ["music", "entertainment"],
+  "screenshots": [],
+  "shortcuts": [
+    {
+      "name": "Play Music",
+      "short_name": "Play",
+      "description": "Start playing the album",
+      "url": "/",
+      "icons": [
+        {
+          "src": "assets/img/aerovista_anthem.png",
+          "sizes": "192x192"
+        }
+      ]
+    }
+  ],
+  "prefer_related_applications": false
+}
+
