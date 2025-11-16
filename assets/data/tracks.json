@@ -9,21 +9,21 @@
   {
     "title": "Neural Sparks \u2014 Nexus TechWorks",
     "cover": "assets/img/neural_sparks.png",
-    "src": "Audio/Neural Sparks — Nexus TechWorks.mp3",
+    "src": "Audio/Neural Sparks_Nexus TechWorks.mp3",
     "duration": "3:18",
     "division": "Nexus TechWorks"
   },
   {
     "title": "Echo Through the Verse \u2014 EchoVerse Audio",
     "cover": "assets/img/echo_through_the_verse.png",
-    "src": "Audio/Echo Through the Verse — EchoVerse Audio.mp3",
+    "src": "Audio/Echo Through the Verse_EchoVerse Audio.mp3",
     "duration": "3:42",
     "division": "EchoVerse Audio"
   },
   {
     "title": "SkyForge Rising \u2014 SkyForge Creative Studios",
     "cover": "assets/img/skyforge_rising.png",
-    "src": "Audio/SkyForge Rising — SkyForge Creative Studios.mp3",
+    "src": "Audio/SkyForge Rising_SkyForge Creative Studios.mp3",
     "duration": "3:29",
     "division": "SkyForge Creative Studios"
   },
@@ -37,14 +37,14 @@
   {
     "title": "Lumina Flow \u2014 Lumina Creative Media",
     "cover": "assets/img/aerovista_anthem.png",
-    "src": "Audio/Lumina Flow — Lumina Creative Media.mp3",
+    "src": "Audio/Lumina Flow_Lumina Creative Media.mp3",
     "duration": "3:21",
     "division": "Lumina Creative Media"
   },
   {
     "title": "Vespera Dreams \u2014 Vespera Publishing",
     "cover": "assets/img/vespera_dreams.png",
-    "src": "Audio/Vespera Dreams — Vespera Publishing.mp3",
+    "src": "Audio/Vespera Dreams for Vespera Publishing.mp3",
     "duration": "3:48",
     "division": "Vespera Publishing"
   },
@@ -58,7 +58,7 @@
   {
     "title": "The AeroVista Effect \u2014 AeroVista LLC",
     "cover": "assets/img/aerovista_effect.png",
-    "src": "Audio/The AeroVista Effect — AeroVista LLC.mp3",
+    "src": "Audio/The AeroVista Effect_AeroVista LLC.mp3",
     "duration": "3:58",
     "division": "AeroVista LLC"
   },
@@ -67,6 +67,13 @@
     "cover": "assets/img/aerovista_anthem.png",
     "src": "Audio/Dip Zip Lob It Up (Crack Goes the Bat (1).mp3",
     "duration": "3:30",
+    "division": "AeroVista"
+  },
+  {
+    "title": "🪣 Swamp-Hop",
+    "cover": "assets/img/aerovista_anthem.png",
+    "src": "Audio/SwampHop.mp3",
+    "duration": "3:45",
     "division": "AeroVista"
   }
 ]
